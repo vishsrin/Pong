@@ -11,22 +11,28 @@ public class Board {
 	private Ball gameBall;
 	private Paddle left;
 	private Paddle right;
-	final double ballSpeed = 0.5;
+	private double ballSpeed;
 	private int lScore = 0;
 	private int rScore = 0;
+	private double paddleSpeed;
 
 	public Board(int xDim, int yDim, JFrame frame) {
 		xDimension = xDim;
 		yDimension = yDim;
+		//System.out.println(ballSpeed);
+		ballSpeed = yDim / 1000.0;
+		paddleSpeed = ballSpeed * 1.25;
 		gameBall = new Ball(xDimension / 2, yDimension / 2, ballSpeed, xDimension / 60);
-		left = new Paddle(xDimension / 10, yDimension / 2, yDimension / 4, xDim / 100);
-		right = new Paddle(9 * xDimension / 10, yDimension / 2, yDimension / 4, xDim / 100);
+		left = new Paddle(xDimension / 10, yDimension / 2, yDimension / 4, xDim / 100, yDimension, paddleSpeed);
+		right = new Paddle(9 * xDimension / 10, yDimension / 2, yDimension / 4, xDim / 100, yDimension, paddleSpeed);
 	}
 
 	public void refreshBall() {
 		if (ballLeftBoard()) {
 			changeScore();
 			gameBall.reset();
+			left.setY(yDimension / 2);
+			right.setY(yDimension / 2);
 		}
 
 		else if (boundingBoxCollides(gameBall.getBoundingBox(), left.getBoundingBox()) || boundingBoxCollides(gameBall.getBoundingBox(), right.getBoundingBox())) {
@@ -57,22 +63,79 @@ public class Board {
 	
 	public void changeScore()
 	{
-		if(gameBall.getBoundingBox().getX() < 0)
+		if(gameBall.getBoundingBox().getX() < 0 && rScore == 9)
+		{
+			rWins();
+		}
+		
+		else if(gameBall.getBoundingBox().getX() < 0)
 		{
 			rScore++;
 		}
 		
+		else if(lScore == 9)
+		{
+			lWins();
+		}
+		
 		else lScore++;
 	}
-
+	
+	public void start(String sideDir)
+	{
+		if(sideDir.equalsIgnoreCase("leftup"))
+		{
+			left.start("up");
+		}
+		
+		else if(sideDir.equalsIgnoreCase("leftdown"))
+		{
+			left.start("down");
+		}
+		
+		if(sideDir.equalsIgnoreCase("rightup"))
+		{
+			right.start("up");
+		}
+		
+		else if(sideDir.equalsIgnoreCase("rightdown"))
+		{
+			right.start("down");
+		}
+	}
+	
+	public void stop(String sideDir)
+	{
+		if(sideDir.equalsIgnoreCase("left"))
+		{
+			left.stop();
+		}
+		else if(sideDir.equalsIgnoreCase("right"))
+		{
+			right.stop();
+		}
+	}
+	
+	public void rWins()
+	{
+		System.out.println("Right Wins");
+	}
+	
+	public void lWins()
+	{
+		System.out.println("Left Wins");
+	}
 	
 	
 	public void draw(Graphics2D g2) {
 		refreshBall();
-		left.refresh(gameBall.getMiddleY(), yDimension);
+		//left.refresh(gameBall.getMiddleY(), yDimension);
 		//right.refresh(gameBall.getMiddleY(), yDimension);
+		
+		left.refresh();
+		right.autoRefresh(gameBall.getMiddleY());
 
-		g2.setColor(Color.BLACK);
+		g2.setColor(Color.PINK);
 		Rectangle2D backBoard = new Rectangle2D.Double(0, 0, xDimension, yDimension);
 		g2.fill(backBoard);
 		g2.draw(backBoard);
